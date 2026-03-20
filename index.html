@@ -356,50 +356,149 @@ input:checked+.tog-track:before{transform:translateX(13px);background:#1a1810;}
 .osc-shape-btn.active{background:var(--accent-bg);color:var(--accent);outline:1px solid var(--accent-bd);}
 
 /* ── MOBILE DRAWER ── */
+/* ── MOBILE DRAWER ── */
 #mobile-drawer{
   display:none;
   position:absolute;bottom:0;left:0;right:0;z-index:30;
-  background:rgba(20,20,20,0.78);
-  border-radius:var(--r) var(--r) 0 0;
-  border:1px solid rgba(255,255,255,0.10);
-  border-bottom:none;
-  box-shadow:0 -8px 40px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,0.07);
-  backdrop-filter:blur(32px) saturate(1.4);
-  -webkit-backdrop-filter:blur(32px) saturate(1.4);
-  transition:transform .3s cubic-bezier(.4,0,.2,1);
+  /* Glass — iOS style */
+  background:rgba(16,16,16,0.82);
+  border-radius:20px 20px 0 0;
+  border-top:1px solid rgba(255,255,255,0.12);
+  box-shadow:0 -12px 48px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,0.08);
+  backdrop-filter:blur(40px) saturate(1.6);
+  -webkit-backdrop-filter:blur(40px) saturate(1.6);
+  transition:transform .36s cubic-bezier(.32,0,.32,1);
   overflow:hidden;
-  /* FIX: drawer is 75% of stage height max — leaves canvas always visible at top */
-  height:75%;
-  transform:translateY(calc(100% - 200px));
+  /* peek: 88px — just the handle + tab strip, canvas fully visible */
+  height:82%;
+  transform:translateY(calc(100% - 88px));
 }
-#mobile-drawer.expanded{transform:translateY(0);}
-#drawer-handle{width:100%;padding:10px 0 6px;display:flex;justify-content:center;align-items:center;cursor:grab;touch-action:none;flex-shrink:0;}
+#mobile-drawer.expanded{ transform:translateY(0); }
+
+#drawer-handle{
+  width:100%;padding:12px 0 8px;
+  display:flex;justify-content:center;align-items:center;
+  cursor:grab;touch-action:none;flex-shrink:0;
+}
 #drawer-handle:active{cursor:grabbing;}
-.drawer-pill{width:36px;height:4px;background:var(--hi);border-radius:2px;}
-#drawer-content{flex:1;overflow-y:auto;padding-bottom:20px;}
-#drawer-content::-webkit-scrollbar{width:3px;}
-#drawer-content::-webkit-scrollbar-thumb{background:var(--hi);border-radius:2px;}
+.drawer-pill{
+  width:40px;height:4px;
+  background:rgba(255,255,255,0.2);
+  border-radius:2px;
+}
+
+#drawer-content{flex:1;overflow-y:auto;overflow-x:hidden;padding-bottom:32px;-webkit-overflow-scrolling:touch;}
+#drawer-content::-webkit-scrollbar{display:none;}
 
 /* ── MOBILE LAYOUT ── */
-body.mobile #stage{display:block;position:relative;}
-/* FIX: canvas bg takes up space above the peekaboo drawer (200px) */
+body.mobile #app{ height:100vh; }
+body.mobile #topbar{ display:none; } /* hide desktop topbar entirely on mobile */
+body.mobile #statusbar{ display:none; }
+body.mobile #stage{ display:block;position:relative;height:100%; }
+
+/* Canvas fills the FULL screen — drawer overlays it */
 body.mobile #canvas-bg{
-  position:absolute;top:0;left:0;right:0;
-  bottom:200px;
+  position:absolute;
+  top:0;left:0;right:0;bottom:0;
   display:flex;align-items:center;justify-content:center;
 }
-body.mobile #panel-left,body.mobile #panel-right,body.mobile #zoom-bar{display:none;}
-body.mobile #mobile-drawer{display:flex;flex-direction:column;}
-#mobile-top{display:none;position:absolute;top:8px;left:8px;right:8px;z-index:20;justify-content:space-between;align-items:center;}
-body.mobile #mobile-top{display:flex;}
-.m-pill{display:flex;align-items:center;gap:4px;padding:5px 10px;background:rgba(20,20,20,0.75);border:1px solid var(--border);border-radius:var(--r-pill);color:var(--text-2);font-family:var(--font);font-size:10px;font-weight:500;cursor:pointer;backdrop-filter:blur(16px);}
-.m-pill svg{width:11px;height:11px;}
-#drawer-tabs{display:flex;gap:0;border-bottom:1px solid var(--border);flex-shrink:0;}
-.d-tab{flex:1;padding:9px 0;background:transparent;border:none;border-bottom:2px solid transparent;color:var(--text-3);font-family:var(--font);font-size:11px;font-weight:600;cursor:pointer;transition:all .12s;letter-spacing:.02em;}
-.d-tab:hover{color:var(--text-2);}
-.d-tab.active{color:var(--text);border-bottom-color:var(--accent);}
-.d-panel{display:none;padding:12px 14px;}
-.d-panel.active{display:block;}
+body.mobile #panel-left,
+body.mobile #panel-right,
+body.mobile #zoom-bar{ display:none; }
+body.mobile #mobile-drawer{ display:flex;flex-direction:column; }
+
+/* Mobile top HUD — floats over canvas */
+#mobile-top{
+  display:none;
+  position:absolute;
+  top:0;left:0;right:0;
+  z-index:20;
+  padding:12px 14px;
+  justify-content:space-between;
+  align-items:center;
+  /* subtle gradient so buttons are legible over any image */
+  background:linear-gradient(to bottom, rgba(0,0,0,0.45) 0%, transparent 100%);
+  pointer-events:none;
+}
+body.mobile #mobile-top{ display:flex; }
+#mobile-top > *{ pointer-events:all; }
+
+/* Larger touch targets */
+.m-pill{
+  display:flex;align-items:center;gap:5px;
+  padding:8px 14px;
+  background:rgba(18,18,18,0.72);
+  border:1px solid rgba(255,255,255,0.12);
+  border-radius:var(--r-pill);
+  color:rgba(255,255,255,0.75);
+  font-family:var(--font);font-size:12px;font-weight:500;
+  cursor:pointer;
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  min-height:36px;
+}
+.m-pill svg{ width:13px;height:13px; }
+.m-pill.active{ color:var(--accent); border-color:var(--accent-bd); }
+
+/* Bottom action bar — randomize + reset always visible */
+#mobile-actions{
+  position:absolute;
+  bottom:96px; /* sits just above the peeking drawer */
+  left:50%;transform:translateX(-50%);
+  z-index:31;
+  display:none;
+  align-items:center;
+  gap:8px;
+}
+body.mobile #mobile-actions{ display:flex; }
+body.mobile.drawer-open #mobile-actions{ display:none; }
+.m-action-btn{
+  display:flex;align-items:center;gap:5px;
+  padding:9px 18px;
+  background:rgba(18,18,18,0.75);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:var(--r-pill);
+  color:rgba(255,255,255,0.6);
+  font-family:var(--font);font-size:12px;font-weight:500;
+  cursor:pointer;
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  min-height:38px;
+  white-space:nowrap;
+}
+.m-action-btn svg{ width:12px;height:12px; }
+.m-action-btn.rnd:active{ color:var(--accent); }
+.m-action-btn.rst:active{ color:var(--danger); }
+
+/* Tabs */
+#drawer-tabs{
+  display:flex;
+  gap:0;
+  border-bottom:1px solid rgba(255,255,255,0.06);
+  flex-shrink:0;
+  padding:0 4px;
+}
+.d-tab{
+  flex:1;padding:11px 0;
+  background:transparent;border:none;
+  border-bottom:2px solid transparent;
+  color:rgba(255,255,255,0.3);
+  font-family:var(--font);font-size:12px;font-weight:600;
+  cursor:pointer;transition:all .12s;
+  letter-spacing:.02em;
+}
+.d-tab.active{ color:var(--text); border-bottom-color:var(--accent); }
+
+/* Panel content */
+.d-panel{ display:none; padding:16px 16px 0; }
+.d-panel.active{ display:block; }
+
+/* Mobile sliders — bigger touch area */
+body.mobile input[type=range]{ height:28px; }
+body.mobile input[type=range]::-webkit-slider-thumb{ width:20px;height:20px;margin-top:-7px; }
+body.mobile .param-lbl{ font-size:11px; }
+body.mobile .param-val{ font-size:12px; }
+body.mobile .param-row{ margin-bottom:14px; }
 #file-input{display:none;}
 #audio-file-input{display:none;}
 
@@ -907,6 +1006,16 @@ body.mobile #mobile-top{display:flex;}
     <button class="zb" id="btn-zi">+</button>
   </div>
 
+  <!-- MOBILE ACTIONS — float above drawer -->
+  <div id="mobile-actions">
+    <button class="m-action-btn rnd" id="m-btn-randomize">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/></svg>randomize
+    </button>
+    <button class="m-action-btn rst" id="m-btn-reset">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>reset
+    </button>
+  </div>
+
   <!-- MOBILE DRAWER -->
   <div id="mobile-drawer">
     <div id="drawer-handle"><div class="drawer-pill"></div></div>
@@ -918,10 +1027,10 @@ body.mobile #mobile-top{display:flex;}
     </div>
     <div id="drawer-content">
       <div class="d-panel active" data-dp="effect">
-        <div class="p-label" style="margin-bottom:8px;">Effect</div>
-        <div id="m-eff-buttons" style="display:flex;flex-direction:column;gap:3px;margin-bottom:12px;"></div>
-        <div id="m-algo-wrap" style="margin-bottom:12px;"></div>
-        <div class="p-label" style="margin-bottom:8px;">Pixel Density</div>
+        <div class="p-label" style="margin-bottom:10px;">Effect</div>
+        <div id="m-eff-buttons" style="display:flex;flex-direction:column;gap:4px;margin-bottom:14px;"></div>
+        <div id="m-algo-wrap" style="margin-bottom:14px;"></div>
+        <div class="p-label" style="margin-bottom:10px;">Pixel Density</div>
         <div class="den-row" id="m-den-row">
           <button class="den-btn" data-d="1">L1</button>
           <button class="den-btn active" data-d="2">L2</button>
@@ -930,21 +1039,17 @@ body.mobile #mobile-top{display:flex;}
           <button class="den-btn" data-d="5">L5</button>
         </div>
         <div class="den-sub"><span>coarse</span><span>fine</span></div>
-        <div style="display:flex;gap:6px;margin-top:12px;">
-          <button class="util-btn rnd" id="m-btn-randomize" style="flex:1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/></svg>randomize</button>
-          <button class="util-btn rst" id="m-btn-reset" style="flex:1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>reset</button>
-        </div>
       </div>
       <div class="d-panel" data-dp="params" id="m-params-panel"></div>
       <div class="d-panel" data-dp="color" id="m-color-panel"></div>
       <div class="d-panel" data-dp="audio">
         <div class="audio-section">
           <div class="audio-status"><div class="audio-dot" id="m-a-dot"></div><span class="audio-lbl" id="m-a-lbl">No source</span></div>
-          <div class="audio-btns">
-            <button class="audio-btn" id="m-btn-mic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>mic</button>
-            <button class="audio-btn" id="m-btn-audio"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/></svg>import</button>
+          <div class="audio-btns" style="margin-top:10px;">
+            <button class="audio-btn" id="m-btn-mic" style="padding:10px 12px;font-size:12px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>mic</button>
+            <button class="audio-btn" id="m-btn-audio" style="padding:10px 12px;font-size:12px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/></svg>import</button>
           </div>
-          <div id="m-audio-meter" class="hidden" style="height:24px;background:var(--raised);border-radius:var(--r-sm);overflow:hidden;display:flex;align-items:flex-end;gap:1px;padding:2px 3px;margin-top:6px;"></div>
+          <div id="m-audio-meter" class="hidden" style="height:28px;background:var(--raised);border-radius:var(--r-sm);overflow:hidden;display:flex;align-items:flex-end;gap:1px;padding:2px 3px;margin-top:10px;"></div>
         </div>
       </div>
     </div>
@@ -2288,11 +2393,11 @@ let drawerExpanded=false, dragStartY=0, dragStartTranslate=0;
 function setDrawerExpanded(v){
   drawerExpanded=v;
   drawer.classList.toggle('expanded',v);
+  document.body.classList.toggle('drawer-open',v);
 }
 
 handle.addEventListener('touchstart',e=>{
   dragStartY=e.touches[0].clientY;
-  // Read current translateY from matrix
   const m=new DOMMatrix(getComputedStyle(drawer).transform);
   dragStartTranslate=m.m42||0;
   drawer.style.transition='none';
@@ -2301,11 +2406,9 @@ handle.addEventListener('touchstart',e=>{
 handle.addEventListener('touchmove',e=>{
   const dy=e.touches[0].clientY-dragStartY;
   const drawerH=drawer.offsetHeight;
-  // FIX: clamp so drawer never goes above its own top (translateY >= 0 when fully open)
-  // and never goes below the peek height
-  const peekAmount=200; // px of drawer visible at rest
-  const minT=0;         // fully expanded
-  const maxT=drawerH-peekAmount; // peeked
+  const peekAmount=88;
+  const minT=0;
+  const maxT=drawerH-peekAmount;
   const newT=clamp(dragStartTranslate+dy, minT, maxT);
   drawer.style.transform=`translateY(${newT}px)`;
 },{passive:true});
@@ -2315,7 +2418,6 @@ handle.addEventListener('touchend',()=>{
   const m=new DOMMatrix(getComputedStyle(drawer).transform);
   const currentY=m.m42||0;
   const drawerH=drawer.offsetHeight;
-  // Snap: if more than 40% open, expand fully
   setDrawerExpanded(currentY<drawerH*0.4);
 });
 
