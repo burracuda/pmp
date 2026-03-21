@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
 <title>pmp-dither</title>
 
 <!-- PWA -->
@@ -58,10 +58,10 @@ if('serviceWorker' in navigator){
   --mono:'DM Mono',monospace;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
-html,body{height:100%;background:var(--bg-deep);color:var(--text);font-family:var(--font);font-size:13px;overflow:hidden;}
+html,body{height:100%;background:var(--bg-deep);color:var(--text);font-family:var(--font);font-size:13px;overflow:hidden;overscroll-behavior:none;}
 
 /* ── SHELL ── */
-#app{height:100vh;display:flex;flex-direction:column;}
+#app{height:100dvh;display:flex;flex-direction:column;}
 #topbar{height:48px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;padding:0 14px;gap:8px;position:relative;z-index:20;}
 #stage{flex:1;min-height:0;position:relative;overflow:hidden;}
 #statusbar{height:26px;flex-shrink:0;display:flex;align-items:center;justify-content:center;gap:24px;font-family:var(--mono);font-size:10px;color:var(--text-3);letter-spacing:.04em;background:var(--bg-deep);}
@@ -361,7 +361,7 @@ input:checked+.tog-track:before{transform:translateX(13px);background:#1a1810;}
   display:none;
   position:absolute;bottom:0;left:0;right:0;z-index:30;
   /* Glass — iOS style */
-  background:rgba(16,16,16,0.82);
+  background:rgba(16,16,16,0.92);
   border-radius:20px 20px 0 0;
   border-top:1px solid rgba(255,255,255,0.12);
   box-shadow:0 -12px 48px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,0.08);
@@ -369,8 +369,8 @@ input:checked+.tog-track:before{transform:translateX(13px);background:#1a1810;}
   -webkit-backdrop-filter:blur(40px) saturate(1.6);
   transition:transform .36s cubic-bezier(.32,0,.32,1);
   overflow:hidden;
-  /* peek: 88px — just the handle + tab strip, canvas fully visible */
-  height:82%;
+  /* height = enough room for full content; peek shows handle+tabs = 88px */
+  height:72%;
   transform:translateY(calc(100% - 88px));
 }
 #mobile-drawer.expanded{ transform:translateY(0); }
@@ -387,19 +387,20 @@ input:checked+.tog-track:before{transform:translateX(13px);background:#1a1810;}
   border-radius:2px;
 }
 
-#drawer-content{flex:1;overflow-y:auto;overflow-x:hidden;padding-bottom:32px;-webkit-overflow-scrolling:touch;}
+#drawer-content{flex:1;overflow-y:auto;overflow-x:hidden;padding-bottom:calc(32px + env(safe-area-inset-bottom));-webkit-overflow-scrolling:touch;}
 #drawer-content::-webkit-scrollbar{display:none;}
 
 /* ── MOBILE LAYOUT ── */
-body.mobile #app{ height:100vh; }
+body.mobile #app{ height:100dvh; }
 body.mobile #topbar{ display:none; } /* hide desktop topbar entirely on mobile */
 body.mobile #statusbar{ display:none; }
 body.mobile #stage{ display:block;position:relative;height:100%; }
 
-/* Canvas fills the FULL screen — drawer overlays it */
+/* Canvas fills the screen minus the drawer peek height */
 body.mobile #canvas-bg{
   position:absolute;
-  top:0;left:0;right:0;bottom:0;
+  top:0;left:0;right:0;
+  bottom:88px;
   display:flex;align-items:center;justify-content:center;
 }
 body.mobile #panel-left,
@@ -414,6 +415,7 @@ body.mobile #mobile-drawer{ display:flex;flex-direction:column; }
   top:0;left:0;right:0;
   z-index:20;
   padding:12px 14px;
+  padding-top:calc(12px + env(safe-area-inset-top));
   justify-content:space-between;
   align-items:center;
   /* subtle gradient so buttons are legible over any image */
@@ -440,35 +442,27 @@ body.mobile #mobile-top{ display:flex; }
 .m-pill svg{ width:13px;height:13px; }
 .m-pill.active{ color:var(--accent); border-color:var(--accent-bd); }
 
-/* Bottom action bar — randomize + reset always visible */
+/* Bottom action bar — now lives inside the Effect tab */
 #mobile-actions{
-  position:absolute;
-  bottom:96px; /* sits just above the peeking drawer */
-  left:50%;transform:translateX(-50%);
-  z-index:31;
   display:none;
-  align-items:center;
-  gap:8px;
 }
-body.mobile #mobile-actions{ display:flex; }
-body.mobile.drawer-open #mobile-actions{ display:none; }
 .m-action-btn{
   display:flex;align-items:center;gap:5px;
   padding:9px 18px;
-  background:rgba(18,18,18,0.75);
-  border:1px solid rgba(255,255,255,0.1);
+  background:var(--raised);
+  border:1px solid var(--border);
   border-radius:var(--r-pill);
-  color:rgba(255,255,255,0.6);
+  color:var(--text-2);
   font-family:var(--font);font-size:12px;font-weight:500;
   cursor:pointer;
-  backdrop-filter:blur(20px);
-  -webkit-backdrop-filter:blur(20px);
   min-height:38px;
   white-space:nowrap;
+  transition:all .12s;
 }
+.m-action-btn:hover,.m-action-btn:active{ background:var(--hi); }
 .m-action-btn svg{ width:12px;height:12px; }
-.m-action-btn.rnd:active{ color:var(--accent); }
-.m-action-btn.rst:active{ color:var(--danger); }
+.m-action-btn.rnd:active{ color:var(--accent); background:var(--accent-bg); }
+.m-action-btn.rst:active{ color:var(--danger); background:rgba(201,123,106,.12); }
 
 /* Tabs */
 #drawer-tabs{
@@ -544,6 +538,26 @@ body.mobile .param-row{ margin-bottom:14px; }
   gap:10px;
   padding:20px 24px 24px;
   min-height:0;
+}
+
+/* On mobile: 2-column grid with square aspect ratio cards */
+@media (max-width:639px){
+  #menu-scroll{
+    grid-template-columns:repeat(2,1fr);
+    grid-template-rows:none;
+    grid-auto-rows:1fr;
+    gap:8px;
+    padding:16px;
+    overflow-y:auto;
+  }
+  .menu-card{
+    aspect-ratio:1/1;
+  }
+  /* last card (+ free) spans to stay balanced if 7th item */
+  .menu-card:last-child:nth-child(odd){
+    grid-column:span 2;
+    aspect-ratio:2/1;
+  }
 }
 
 .menu-card{
@@ -1039,6 +1053,14 @@ body.mobile .param-row{ margin-bottom:14px; }
           <button class="den-btn" data-d="5">L5</button>
         </div>
         <div class="den-sub"><span>coarse</span><span>fine</span></div>
+        <div style="display:flex;gap:8px;margin-top:16px;padding-bottom:4px;">
+          <button class="m-action-btn rnd" id="m-btn-randomize" style="flex:1;justify-content:center;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/></svg>randomize
+          </button>
+          <button class="m-action-btn rst" id="m-btn-reset" style="flex:1;justify-content:center;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>reset
+          </button>
+        </div>
       </div>
       <div class="d-panel" data-dp="params" id="m-params-panel"></div>
       <div class="d-panel" data-dp="color" id="m-color-panel"></div>
@@ -2367,10 +2389,10 @@ function syncMobileParams(){
 function syncMobileColor(){
   const mc=gv('m-color-panel');
   if(!mc)return;
-  const colorCard=document.querySelector('#panel-right .card:last-of-type .pal-tabs');
-  if(!colorCard)return;
-  const parent=colorCard.closest('.card');
-  if(!parent)return;
+  // Target the Color card specifically — it contains .pal-tabs
+  const colorCard=document.querySelector('#panel-right .card:has(.pal-tabs)');
+  if(!colorCard){ mc.innerHTML=''; return; }
+  const parent=colorCard;
   mc.innerHTML=parent.innerHTML;
   mc.querySelectorAll('.swatch').forEach(s=>{
     s.addEventListener('click',function(){
