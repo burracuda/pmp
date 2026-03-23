@@ -54,7 +54,7 @@ if('serviceWorker' in navigator){
   --green:#5cb85c;
   --shadow:0 8px 32px rgba(0,0,0,0.6),0 2px 8px rgba(0,0,0,0.4);
   --r:12px;--r-sm:7px;--r-pill:999px;
-  --font:'DM Sans',system-ui,sans-serif;
+  --font:'Didact Gothic','DM Sans',system-ui,sans-serif;
   --mono:'DM Mono',monospace;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -67,7 +67,7 @@ html,body{height:100%;background:var(--bg-deep);color:var(--text);font-family:va
 #statusbar{height:26px;flex-shrink:0;display:flex;align-items:center;justify-content:center;gap:24px;font-family:var(--mono);font-size:10px;color:var(--text-3);letter-spacing:.04em;background:var(--bg-deep);}
 
 /* ── TOP BAR ── */
-.top-logo{font-size:13px;font-weight:700;letter-spacing:.1em;display:flex;align-items:center;gap:6px;}
+.top-logo{font-family:'Didact Gothic','DM Sans',system-ui,sans-serif;font-size:13px;font-weight:400;letter-spacing:.08em;display:flex;align-items:center;gap:6px;cursor:pointer;}
 .top-logo em{font-size:9px;color:var(--text-3);font-style:normal;font-weight:400;}
 .top-group{display:flex;align-items:center;gap:6px;}
 .pill{display:flex;align-items:center;gap:5px;padding:5px 12px;background:var(--raised);border:1px solid var(--border);border-radius:var(--r-pill);color:var(--text-2);font-family:var(--font);font-size:11px;font-weight:500;cursor:pointer;transition:all .12s;white-space:nowrap;}
@@ -86,14 +86,13 @@ html,body{height:100%;background:var(--bg-deep);color:var(--text);font-family:va
 #canvas-bg{
   position:absolute;inset:0;
   display:flex;align-items:center;justify-content:center;
-  overflow:hidden;background:var(--bg);
+  overflow:hidden;background:var(--bg-deep);
   width:auto;height:auto;
 }
 #canvas-wrap{
   position:relative;border-radius:var(--r);overflow:hidden;
   box-shadow:0 20px 60px rgba(0,0,0,.7);
   transform-origin:center center;
-  /* FIX: never let transform push it to corner — always centered */
   flex-shrink:0;
 }
 #output-canvas{display:block;image-rendering:pixelated;cursor:pointer;}
@@ -203,7 +202,7 @@ body.grounded #audio-bar{left:196px;right:244px;}
 /* ── PANEL INTERNALS ── */
 .p-section{padding:12px 13px;border-bottom:1px solid var(--border);}
 .p-section:last-child{border-bottom:none;}
-.p-label{font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--text-3);margin-bottom:9px;}
+.p-label{font-size:9px;font-weight:400;letter-spacing:.10em;text-transform:uppercase;color:var(--text-3);margin-bottom:9px;}
 .src-btn{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:var(--r-sm);border:none;background:transparent;color:var(--text-2);font-family:var(--font);font-size:12px;cursor:pointer;transition:all .12s;width:100%;text-align:left;}
 .src-btn:hover{background:var(--raised);color:var(--text);}
 .src-btn.active{background:var(--raised);color:var(--text);}
@@ -258,7 +257,7 @@ body.grounded #audio-bar{left:196px;right:244px;}
 .param-row{display:flex;flex-direction:column;gap:4px;margin-bottom:10px;}
 .param-row:last-child{margin-bottom:0;}
 .param-hdr{display:flex;align-items:center;justify-content:space-between;}
-.param-lbl{font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text-3);}
+.param-lbl{font-size:10px;font-weight:400;letter-spacing:.06em;text-transform:uppercase;color:var(--text-3);}
 .param-val{font-family:var(--mono);font-size:11px;color:var(--text-2);}
 .param-track{display:flex;align-items:center;gap:5px;}
 .lock-btn{width:17px;height:17px;display:flex;align-items:center;justify-content:center;background:transparent;border:none;border-radius:4px;cursor:pointer;color:var(--text-3);transition:all .12s;flex-shrink:0;}
@@ -396,12 +395,56 @@ body.mobile #topbar{ display:none; } /* hide desktop topbar entirely on mobile *
 body.mobile #statusbar{ display:none; }
 body.mobile #stage{ display:block;position:relative;height:100%; }
 
-/* Canvas fills the screen minus the drawer peek height */
+/* Canvas area shrinks as drawer rises. overflow:auto lets user pan if image is larger than area. */
 body.mobile #canvas-bg{
   position:absolute;
   top:0;left:0;right:0;
   bottom:70px;
-  display:flex;align-items:center;justify-content:center;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  overflow:auto;
+  -webkit-overflow-scrolling:touch;
+  background:var(--bg-deep);
+  transition:bottom .36s cubic-bezier(.32,0,.32,1);
+}
+body.mobile.drawer-open #canvas-bg{
+  bottom:58vh;
+}
+/* Fullscreen: drawer hidden */
+body.mobile.canvas-full #canvas-bg{
+  bottom:0;
+  transition:bottom .28s cubic-bezier(.32,0,.32,1);
+}
+body.mobile.canvas-full #mobile-drawer{
+  transform:translateY(100%) !important;
+  transition:transform .28s cubic-bezier(.32,0,.32,1);
+}
+body.mobile.canvas-full #mobile-actions{
+  opacity:0;pointer-events:none;
+}
+/* Fullscreen restore button — bottom-right corner */
+#m-btn-fullscreen{
+  position:absolute;
+  bottom:calc(80px + env(safe-area-inset-bottom));
+  right:14px;
+  z-index:32;
+  display:none;
+  width:36px;height:36px;
+  background:rgba(18,18,18,0.72);
+  border:1px solid rgba(255,255,255,0.14);
+  border-radius:var(--r-pill);
+  color:rgba(255,255,255,0.6);
+  font-size:16px;line-height:1;
+  align-items:center;justify-content:center;
+  cursor:pointer;
+  backdrop-filter:blur(20px);
+  -webkit-backdrop-filter:blur(20px);
+  transition:opacity .2s,transform .2s;
+}
+body.mobile #m-btn-fullscreen{ display:flex; }
+body.mobile.canvas-full #m-btn-fullscreen{
+  bottom:calc(16px + env(safe-area-inset-bottom));
 }
 body.mobile #panel-left,
 body.mobile #panel-right,
@@ -535,6 +578,20 @@ body.mobile .param-row{ margin-bottom:14px; }
   font-family:'DM Sans',system-ui,sans-serif;
   font-size:12px;font-weight:400;
   letter-spacing:.03em;color:rgba(255,255,255,0.3);
+  cursor:default;
+  user-select:none;
+}
+/* desktop: clicking pmp wordmark reopens menu — make it feel interactive */
+@media (min-width:640px){
+  #menu-wordmark.can-back{
+    cursor:pointer;
+    transition:color .15s;
+  }
+  #menu-wordmark.can-back:hover{ color:rgba(255,255,255,0.7); }
+}
+/* desktop glyph +15% */
+@media (min-width:640px){
+  .mc-glyph{ font-size:clamp(60px,11vw,102px); }
 }
 #menu-ver{
   font-family:'DM Mono',monospace;
@@ -553,113 +610,94 @@ body.mobile .param-row{ margin-bottom:14px; }
   min-height:0;
 }
 
-/* On mobile: 2-column grid with square aspect ratio cards */
+/* On mobile: 2-column, 3-row grid — fills viewport exactly, no gaps, no overflow */
 @media (max-width:639px){
   #menu-scroll{
     grid-template-columns:repeat(2,1fr);
-    grid-template-rows:none;
-    grid-auto-rows:1fr;
+    grid-template-rows:repeat(3,1fr);
     gap:8px;
-    padding:16px;
-    overflow-y:auto;
+    padding:14px;
+    overflow:hidden;
   }
-  .menu-card{
-    aspect-ratio:1/1;
-  }
-  /* last card (+ free) spans to stay balanced if 7th item */
+  /* ghost card always fills its cell, no spanning */
   .menu-card:last-child:nth-child(odd){
-    grid-column:span 2;
-    aspect-ratio:2/1;
+    grid-column:auto;
+    aspect-ratio:unset;
   }
 }
 
+/* ── BENTO CARDS (thin-glyph style) ── */
 .menu-card{
-  background:#141414;
+  background:#1c1c1c;
   border:1px solid rgba(255,255,255,0.07);
-  border-radius:10px;
+  border-radius:14px;
   overflow:hidden;
   cursor:pointer;
   display:flex;flex-direction:column;
+  padding:14px 14px 12px;
   min-height:0;
-  transition:border-color .18s;
+  transition:background .18s, border-color .18s;
+  -webkit-font-smoothing:antialiased;
 }
-.menu-card:hover{ border-color:rgba(255,255,255,0.22); }
-.menu-card:hover .mc-try-row{ background:rgba(255,255,255,0.06); }
-.menu-card:hover .mc-arrow{ transform:translateX(4px); color:rgba(255,255,255,0.7); }
-
-/* image area — fills the bulk of the card */
-.mc-img{
-  position:relative;
-  flex:1;
-  min-height:0;
-  overflow:hidden;
-  background:#0f0f0f;
-}
-.mc-img canvas{
-  display:block;width:100%;height:100%;
-  image-rendering:pixelated;
-  object-fit:cover;
-}
-/* title overlay — top-left inside image zone */
-.mc-overlay{
-  position:absolute;top:0;left:0;right:0;
-  padding:13px 14px 32px;
-  background:linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, transparent 100%);
+.menu-card:hover{
+  background:#232323;
+  border-color:rgba(255,255,255,0.16);
 }
 .mc-name{
-  font-family:'DM Sans',system-ui,sans-serif;
-  font-size:13px;font-weight:600;
-  color:rgba(255,255,255,0.92);
-  letter-spacing:-.01em;
-  margin-bottom:2px;
+  font-family:'Didact Gothic','DM Sans',system-ui,sans-serif;
+  font-size:13px;font-weight:400;
+  color:rgba(255,255,255,0.88);
+  letter-spacing:.01em;
+  line-height:1.2;
 }
 .mc-sub{
-  font-family:'DM Sans',system-ui,sans-serif;
-  font-size:10px;color:rgba(255,255,255,0.38);
+  font-family:'Didact Gothic','DM Sans',system-ui,sans-serif;
+  font-size:10px;color:rgba(255,255,255,0.32);
   line-height:1.4;
+  margin-top:2px;
 }
-
-/* "Try it now →" footer strip */
-.mc-try-row{
-  flex-shrink:0;
-  display:flex;align-items:center;justify-content:space-between;
-  padding:11px 14px;
-  border-top:1px solid rgba(255,255,255,0.06);
-  background:rgba(255,255,255,0.02);
-  transition:background .15s;
+.mc-glyph-wrap{
+  flex:1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-height:0;
 }
-.mc-try{
+.mc-glyph{
   font-family:'DM Sans',system-ui,sans-serif;
-  font-size:12px;font-weight:500;
-  color:rgba(255,255,255,0.55);
-}
-.mc-arrow{
-  font-size:14px;color:rgba(255,255,255,0.25);
-  transition:transform .15s,color .15s;
-  display:inline-block;
+  font-weight:100;
+  font-size:clamp(52px,14vw,88px);
+  color:rgba(255,255,255,0.45);
+  line-height:1;
+  letter-spacing:-.02em;
+  -webkit-font-smoothing:antialiased;
+  user-select:none;
 }
 
-/* + open free card */
-.menu-card.new-card .mc-img{
-  display:flex;align-items:center;justify-content:center;
-  background:#111;
+/* + ghost card */
+.menu-card.new-card{
+  background:transparent;
+  border:1px dashed rgba(255,255,255,0.14);
+}
+.menu-card.new-card:hover{
+  background:rgba(255,255,255,0.03);
+  border-color:rgba(255,255,255,0.28);
 }
 .menu-plus{
-  width:44px;height:44px;
-  border:1.5px solid rgba(255,255,255,0.18);
-  border-radius:50%;
-  display:flex;align-items:center;justify-content:center;
-  color:rgba(255,255,255,0.18);
-  font-size:22px;line-height:1;
-  transition:border-color .15s,color .15s;
+  font-family:'DM Sans',system-ui,sans-serif;
+  font-weight:200;
+  font-size:clamp(32px,8vw,52px);
+  color:rgba(255,255,255,0.28);
+  line-height:1;
+  transition:color .15s;
+  user-select:none;
 }
 .menu-card.new-card:hover .menu-plus{
-  border-color:rgba(255,255,255,0.4);
-  color:rgba(255,255,255,0.5);
+  color:rgba(255,255,255,0.52);
 }
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@100;400;500;600;700&family=DM+Mono:wght@400;500&family=Didact+Gothic&display=swap" rel="stylesheet">
 </head>
 <body>
 
@@ -671,63 +709,37 @@ body.mobile .param-row{ margin-bottom:14px; }
   <div id="menu-scroll">
 
     <div class="menu-card" data-menu-eff="dither">
-      <div class="mc-img">
-        <canvas class="menu-prev-canvas" data-eff="dither" width="320" height="220"></canvas>
-        <div class="mc-overlay">
-          <div class="mc-name">Dither</div>
-          <div class="mc-sub">Error diffusion &amp; ordered</div>
-        </div>
-      </div>
-      <div class="mc-try-row"><span class="mc-try">Try it now</span><span class="mc-arrow">→</span></div>
+      <div class="mc-name">Dither</div>
+      <div class="mc-sub">diffusion &amp; ordered</div>
+      <div class="mc-glyph-wrap"><span class="mc-glyph">D</span></div>
     </div>
 
     <div class="menu-card" data-menu-eff="halftone">
-      <div class="mc-img">
-        <canvas class="menu-prev-canvas" data-eff="halftone" width="320" height="220"></canvas>
-        <div class="mc-overlay">
-          <div class="mc-name">Halftone</div>
-          <div class="mc-sub">8 cell shapes, CMYK color</div>
-        </div>
-      </div>
-      <div class="mc-try-row"><span class="mc-try">Try it now</span><span class="mc-arrow">→</span></div>
+      <div class="mc-name">Halftone</div>
+      <div class="mc-sub">CMYK, colors</div>
+      <div class="mc-glyph-wrap"><span class="mc-glyph">H</span></div>
     </div>
 
     <div class="menu-card" data-menu-eff="scanline">
-      <div class="mc-img">
-        <canvas class="menu-prev-canvas" data-eff="scanline" width="320" height="220"></canvas>
-        <div class="mc-overlay">
-          <div class="mc-name">Scanline / CRT</div>
-          <div class="mc-sub">Phosphor, curvature, grain</div>
-        </div>
-      </div>
-      <div class="mc-try-row"><span class="mc-try">Try it now</span><span class="mc-arrow">→</span></div>
+      <div class="mc-name">CRT</div>
+      <div class="mc-sub">scanlines, phosphor</div>
+      <div class="mc-glyph-wrap"><span class="mc-glyph">C</span></div>
     </div>
 
     <div class="menu-card" data-menu-eff="glitch">
-      <div class="mc-img">
-        <canvas class="menu-prev-canvas" data-eff="glitch" width="320" height="220"></canvas>
-        <div class="mc-overlay">
-          <div class="mc-name">Glitch</div>
-          <div class="mc-sub">Block shift, databend, sort</div>
-        </div>
-      </div>
-      <div class="mc-try-row"><span class="mc-try">Try it now</span><span class="mc-arrow">→</span></div>
+      <div class="mc-name">Glitch</div>
+      <div class="mc-sub">pixel-sort, error</div>
+      <div class="mc-glyph-wrap"><span class="mc-glyph">G</span></div>
     </div>
 
     <div class="menu-card" data-menu-eff="chroma">
-      <div class="mc-img">
-        <canvas class="menu-prev-canvas" data-eff="chroma" width="320" height="220"></canvas>
-        <div class="mc-overlay">
-          <div class="mc-name">Chromatic</div>
-          <div class="mc-sub">RGB offset, fringe, radial</div>
-        </div>
-      </div>
-      <div class="mc-try-row"><span class="mc-try">Try it now</span><span class="mc-arrow">→</span></div>
+      <div class="mc-name">Chromatic</div>
+      <div class="mc-sub">RGB-split, fringes</div>
+      <div class="mc-glyph-wrap"><span class="mc-glyph">C</span></div>
     </div>
 
     <div class="menu-card new-card" data-menu-eff="free">
-      <div class="mc-img"><span class="menu-plus">+</span></div>
-      <div class="mc-try-row"><span class="mc-try">Open free</span><span class="mc-arrow">→</span></div>
+      <div class="mc-glyph-wrap"><span class="menu-plus">+</span></div>
     </div>
 
   </div>
@@ -1049,6 +1061,12 @@ body.mobile .param-row{ margin-bottom:14px; }
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>reset
     </button>
   </div>
+
+  <!-- Fullscreen toggle — bottom-right corner, always visible on mobile -->
+  <button id="m-btn-fullscreen" title="Toggle fullscreen canvas" aria-label="Toggle fullscreen">
+    <svg id="m-fs-icon-expand" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg>
+    <svg id="m-fs-icon-collapse" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;display:none;"><polyline points="4 14 10 14 10 20"/><polyline points="20 10 14 10 14 4"/><line x1="10" y1="14" x2="3" y2="21"/><line x1="21" y1="3" x2="14" y2="10"/></svg>
+  </button>
 
   <!-- MOBILE DRAWER -->
   <div id="mobile-drawer">
@@ -2053,6 +2071,7 @@ function switchEffect(eff){
   effMenu.classList.remove('open');effTrig.classList.remove('open');
   effTrig.querySelector('.chev').classList.remove('open');
   gv('algo-wrap').style.display=eff==='dither'?'':'none';
+  const maw=gv('m-algo-wrap');if(maw)maw.style.display=eff==='dither'?'':'none';
   document.querySelectorAll('.fx-params').forEach(el=>el.classList.remove('active'));
   if(eff==='dither'){gv('fx-dither').classList.add('active');gv('fx-options').classList.add('active');}
   else gv('fx-'+eff)?.classList.add('active');
@@ -2465,12 +2484,16 @@ function syncMobileColor(){
 // ── MOBILE DRAWER ─────────────────────────────────
 const drawer=gv('mobile-drawer');
 const handle=gv('drawer-handle');
+const canvasBg=gv('canvas-bg');
 let drawerExpanded=false, dragStartY=0, dragStartTranslate=0;
+const PEEK=70;
 
 function setDrawerExpanded(v){
   drawerExpanded=v;
   drawer.classList.toggle('expanded',v);
   document.body.classList.toggle('drawer-open',v);
+  canvasBg.style.bottom=''; // let CSS class handle snap
+  canvasBg.style.transition='';
 }
 
 handle.addEventListener('touchstart',e=>{
@@ -2478,16 +2501,16 @@ handle.addEventListener('touchstart',e=>{
   const m=new DOMMatrix(getComputedStyle(drawer).transform);
   dragStartTranslate=m.m42||0;
   drawer.style.transition='none';
+  canvasBg.style.transition='none';
 },{passive:true});
 
 handle.addEventListener('touchmove',e=>{
   const dy=e.touches[0].clientY-dragStartY;
   const drawerH=drawer.offsetHeight;
-  const peekAmount=70;
-  const minT=0;
-  const maxT=drawerH-peekAmount;
-  const newT=clamp(dragStartTranslate+dy, minT, maxT);
+  const newT=clamp(dragStartTranslate+dy, 0, drawerH-PEEK);
   drawer.style.transform=`translateY(${newT}px)`;
+  // sync canvas-bg bottom live with drawer top edge
+  canvasBg.style.bottom=(drawerH-newT)+'px';
 },{passive:true});
 
 handle.addEventListener('touchend',()=>{
@@ -2495,14 +2518,27 @@ handle.addEventListener('touchend',()=>{
   const currentY=m.m42||0;
   const drawerH=drawer.offsetHeight;
   const shouldExpand=currentY<drawerH*0.4;
-  // Clear inline transform FIRST so CSS transition takes over cleanly
   drawer.style.transform='';
   drawer.style.transition='';
-  // Small delay lets the browser register the cleared inline style before class change
   requestAnimationFrame(()=>setDrawerExpanded(shouldExpand));
 });
 
 handle.addEventListener('click',()=>setDrawerExpanded(!drawerExpanded));
+
+// Fullscreen toggle
+const btnFs=gv('m-btn-fullscreen');
+const iconExpand=gv('m-fs-icon-expand');
+const iconCollapse=gv('m-fs-icon-collapse');
+let canvasFull=false;
+if(btnFs){
+  btnFs.addEventListener('click',()=>{
+    canvasFull=!canvasFull;
+    document.body.classList.toggle('canvas-full',canvasFull);
+    iconExpand.style.display=canvasFull?'none':'block';
+    iconCollapse.style.display=canvasFull?'block':'none';
+    if(canvasFull){ setDrawerExpanded(false); }
+  });
+}
 
 // Drawer tabs
 document.querySelectorAll('.d-tab').forEach(t=>{
@@ -2536,6 +2572,89 @@ document.querySelectorAll('.d-tab').forEach(t=>{
     });
     wrap.appendChild(btn);
   });
+
+  // Build mobile algo grid inside m-algo-wrap
+  const algoWrapM=gv('m-algo-wrap');
+  if(!algoWrapM) return;
+
+  const label=document.createElement('div');
+  label.className='p-label';label.style.cssText='margin-bottom:10px;';
+  label.textContent='Algorithm';
+  algoWrapM.appendChild(label);
+
+  const cats={};
+  ALGOS.forEach(a=>{if(!cats[a.cat])cats[a.cat]=[];cats[a.cat].push(a);});
+
+  // Error Diffusion open by default, others collapsed
+  const defaultOpen={'Error Diffusion':true,'Ordered':false,'Artistic':false};
+
+  for(const[cat,algos] of Object.entries(cats)){
+    const isOpen=defaultOpen[cat]!==false;
+
+    // Header row — tap to toggle
+    const header=document.createElement('button');
+    header.style.cssText=`
+      display:flex;align-items:center;justify-content:space-between;
+      width:100%;background:transparent;border:none;
+      padding:10px 0 6px;cursor:pointer;
+      font-family:var(--font);
+    `;
+    const headerText=document.createElement('span');
+    headerText.style.cssText='font-size:9px;font-weight:400;letter-spacing:.10em;text-transform:uppercase;color:var(--text-3);';
+    headerText.textContent=cat;
+    const chevron=document.createElement('span');
+    chevron.style.cssText=`font-size:10px;color:var(--text-3);transition:transform .18s;transform:rotate(${isOpen?'0':'180deg'})`;
+    chevron.textContent='⌃';
+    header.appendChild(headerText);
+    header.appendChild(chevron);
+    algoWrapM.appendChild(header);
+
+    const grid=document.createElement('div');
+    grid.style.cssText=`display:${isOpen?'grid':'none'};grid-template-columns:1fr 1fr;gap:6px;margin-bottom:4px;`;
+
+    header.addEventListener('click',()=>{
+      const open=grid.style.display==='none';
+      grid.style.display=open?'grid':'none';
+      chevron.style.transform=open?'rotate(0)':'rotate(180deg)';
+    });
+
+    algos.forEach(a=>{
+      const btn=document.createElement('button');
+      btn.dataset.algoId=a.id;
+      btn.style.cssText=`
+        padding:10px 10px 9px;
+        background:var(--raised);
+        border:1px solid ${a.id===S.algo?'var(--accent)':'var(--border)'};
+        border-radius:var(--r-sm);
+        color:${a.id===S.algo?'var(--text)':'var(--text-2)'};
+        font-family:var(--font);
+        font-size:11px;font-weight:400;
+        text-align:left;
+        cursor:pointer;
+        line-height:1.3;
+        transition:all .12s;
+      `;
+      btn.innerHTML=`<div style="font-size:11px;margin-bottom:2px;">${a.name}</div><div style="font-size:9px;color:var(--text-3);font-weight:400;">${a.desc}</div>`;
+
+      btn.addEventListener('click',()=>{
+        selectAlgo(a.id, document.querySelector(`.algo-opt[data-id="${a.id}"]`));
+        algoWrapM.querySelectorAll('[data-algo-id]').forEach(b=>{
+          const active=b.dataset.algoId===a.id;
+          b.style.borderColor=active?'var(--accent)':'var(--border)';
+          b.style.color=active?'var(--text)':'var(--text-2)';
+        });
+        // if selected algo is in a collapsed group, expand it
+        if(grid.style.display==='none'){
+          grid.style.display='grid';
+          chevron.style.transform='rotate(0)';
+        }
+      });
+      grid.appendChild(btn);
+    });
+    algoWrapM.appendChild(grid);
+  }
+
+  algoWrapM.style.display=S.effect==='dither'?'':'none';
 })();
 
 gv('m-btn-mic')?.addEventListener('click',toggleMic);
@@ -2583,102 +2702,7 @@ syncMobileColor();
   const menuScreen = document.getElementById('menu-screen');
   if(!menuScreen) return;
 
-  const effMeta = {
-    dither:      { letter:'D', fg:'#c8b89a', bg:'#0f0e0c' },
-    halftone:    { letter:'H', fg:'#5ba4d4', bg:'#0a141e' },
-    scanline:    { letter:'S', fg:'#7ec87e', bg:'#0a140a' },
-    glitch:      { letter:'G', fg:'#e05555', bg:'#160a0a' },
-    chroma:      { letter:'C', fg:'#b07fd4', bg:'#110a18' },
-    oscilloscope:{ letter:'O', fg:'#4ecdc4', bg:'#0a1716' },
-  };
-
-  function hexToRgb(h){
-    return[parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)];
-  }
-
-  function drawPixelLetter(canvas, letter, fgHex, bgHex){
-    const W = canvas.width, H = canvas.height;
-    const pCtx = canvas.getContext('2d');
-    const fg = hexToRgb(fgHex), bg = hexToRgb(bgHex);
-    const BLOCK = 5;
-    const cols = Math.floor(W / BLOCK);
-    const rows = Math.floor(H / BLOCK);
-
-    const off = document.createElement('canvas');
-    off.width = cols; off.height = rows;
-    const oCtx = off.getContext('2d');
-    oCtx.fillStyle = bgHex;
-    oCtx.fillRect(0,0,cols,rows);
-
-    const fontSize = Math.floor(rows * 0.78);
-    oCtx.fillStyle = fgHex;
-    oCtx.font = `600 ${fontSize}px 'DM Sans',sans-serif`;
-    oCtx.textAlign = 'center';
-    oCtx.textBaseline = 'middle';
-    oCtx.fillText(letter, cols/2, rows/2);
-
-    const imgData = oCtx.getImageData(0,0,cols,rows);
-    const d = imgData.data;
-    const lum = new Float32Array(cols*rows);
-    for(let i=0,p=0;i<d.length;i+=4,p++){
-      lum[p]=0.299*d[i]+0.587*d[i+1]+0.114*d[i+2];
-    }
-    for(let y=0;y<rows;y++){
-      for(let x=0;x<cols;x++){
-        const idx=y*cols+x;
-        const old=lum[idx], neu=old<128?0:255, err=old-neu;
-        lum[idx]=neu;
-        if(x+1<cols) lum[idx+1]+=err*7/16;
-        if(y+1<rows){
-          if(x>0) lum[idx+cols-1]+=err*3/16;
-          lum[idx+cols]+=err*5/16;
-          if(x+1<cols) lum[idx+cols+1]+=err*1/16;
-        }
-      }
-    }
-    for(let p=0;p<lum.length;p++){
-      const c=lum[p]>128?fg:bg;
-      d[p*4]=c[0];d[p*4+1]=c[1];d[p*4+2]=c[2];d[p*4+3]=255;
-    }
-    oCtx.putImageData(imgData,0,0);
-
-    pCtx.imageSmoothingEnabled=false;
-    pCtx.drawImage(off,0,0,W,H);
-
-    // scanlines
-    for(let y=0;y<H;y+=2){
-      pCtx.fillStyle='rgba(0,0,0,0.13)';
-      pCtx.fillRect(0,y,W,1);
-    }
-    // vignette
-    const vg=pCtx.createRadialGradient(W/2,H/2,H*0.15,W/2,H/2,H*0.85);
-    vg.addColorStop(0,'rgba(0,0,0,0)');
-    vg.addColorStop(1,'rgba(0,0,0,0.5)');
-    pCtx.fillStyle=vg;
-    pCtx.fillRect(0,0,W,H);
-  }
-
-  // Size canvases to fill their container after layout
-  function sizeCanvases(){
-    document.querySelectorAll('.menu-prev-canvas').forEach(c=>{
-      const img = c.closest('.mc-img');
-      if(!img) return;
-      const r = img.getBoundingClientRect();
-      if(r.width > 0){
-        c.width = Math.round(r.width);
-        c.height = Math.round(r.height);
-      }
-      const meta = effMeta[c.dataset.eff];
-      if(meta) drawPixelLetter(c, meta.letter, meta.fg, meta.bg);
-    });
-  }
-
-  // Draw after fonts load and layout settles
-  if(document.fonts) {
-    document.fonts.ready.then(()=>requestAnimationFrame(sizeCanvases));
-  } else {
-    setTimeout(sizeCanvases, 120);
-  }
+  const wordmark = document.getElementById('menu-wordmark');
 
   document.querySelectorAll('.menu-card').forEach(card=>{
     card.addEventListener('click',()=>{
@@ -2686,9 +2710,25 @@ syncMobileColor();
       menuScreen.classList.add('exit');
       setTimeout(()=>{
         menuScreen.style.display='none';
+        // mark wordmark + top-logo as back-capable (desktop only)
+        if(wordmark) wordmark.classList.add('can-back');
+        const topLogo = document.querySelector('.top-logo');
+        if(topLogo) topLogo.dataset.menuBack = '1';
         if(eff && eff !== 'free') switchEffect(eff);
       }, 350);
     });
+  });
+
+  // desktop: pmp wordmark in menu topbar re-opens menu (no-op — already on menu)
+  // desktop: pmp logo in app topbar re-opens menu
+  document.addEventListener('click', e=>{
+    // top-logo in app
+    const logo = e.target.closest('.top-logo');
+    if(logo && logo.dataset.menuBack && window.innerWidth >= 640){
+      menuScreen.classList.remove('exit');
+      menuScreen.style.display='flex';
+      return;
+    }
   });
 })();
 
